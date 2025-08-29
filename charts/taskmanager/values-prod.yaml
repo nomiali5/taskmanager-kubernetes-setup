@@ -1,0 +1,55 @@
+namespace: taskmanager
+
+api:
+  replicaCount: 2
+  image:
+    repository: nomiali/taskmanagerapi
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 8080
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 10
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  livenessProbe:
+    path: /tasks
+    initialDelaySeconds: 10
+    periodSeconds: 15
+  readinessProbe:
+    path: /tasks
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  env:
+    APP_ENV: "production"
+    LOG_LEVEL: "Warning"
+
+db:
+  image: mcr.microsoft.com/mssql/server:2022-latest
+  secretName: sql-secret
+  pvc:
+    size: 2Gi
+  service:
+    port: 1433
+
+ingress:
+  enabled: true
+  host: taskmanager.local
+
+serviceAccount:
+  create: true
+  name: "taskmanager-sa"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80

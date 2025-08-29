@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskmanager-api
+  namespace: taskmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taskmanager-api
+  template:
+    metadata:
+      labels:
+        app: taskmanager-api
+    spec:
+      containers:
+      - name: api
+        image: nomiali/taskmanagerapi:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          valueFrom:
+            secretKeyRef:
+              name: sql-secret
+              key: DEFAULT_CONNECTION
+        livenessProbe:
+          httpGet:
+            path: /tasks
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /tasks
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10

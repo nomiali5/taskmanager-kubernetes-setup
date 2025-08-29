@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: taskmanager
+data:
+  ConnectionStrings__DefaultConnection: "Server=taskmanager-db;Database=TasksDb;User=sa;Password=$(SA_PASSWORD);TrustServerCertificate=True;"

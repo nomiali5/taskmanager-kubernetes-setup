@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "taskmanager.fullname" . }}-api
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "taskmanager.name" . }}-api
+  template:
+    metadata:
+      labels:
+        app: {{ include "taskmanager.name" . }}-api
+    spec:
+      containers:
+      - name: api
+        image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: {{ .Values.api.resources.requests.cpu }}
+          memory: {{ .Values.api.resources.requests.memory }}
+        limits:
+          cpu: {{ .Values.api.resources.limits.cpu }}
+          memory: {{ .Values.api.resources.limits.memory }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.db.secretName }}
+        - configMapRef:
+            name: {{ include "taskmanager.fullname" . }}-config
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.api.livenessProbe.path }}
+            port: 8080
+          initialDelaySeconds: {{ .Values.api.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.api.livenessProbe.periodSeconds }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.api.readinessProbe.path }}
+            port: 8080
+          initialDelaySeconds: {{ .Values.api.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.api.readinessProbe.periodSeconds }}
